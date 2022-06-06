@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.View
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 
 class MainActivity : AppCompatActivity() {
 
@@ -24,36 +25,51 @@ class MainActivity : AppCompatActivity() {
         displayMetrics
     }
 
+    lateinit var appViewModel: AppViewModel
+
     val POSX = "posx"
     val POSY = "posy"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        appViewModel = ViewModelProvider(this).get(AppViewModel::class.java)
 
-        view.x = 100f
-        view.y = 100f
-
+        Log.d("ashish", "isPortrait    ${isPortrait()} ------------------------------>")
+        view.x = 0F
+        view.y = 0F
         updatePosition(savedInstanceState)
+    }
+
+    private fun isPortrait(): Boolean {
+        return displayMetrix.widthPixels < displayMetrix.heightPixels
     }
 
     private fun updatePosition(savedInstanceState: Bundle?) {
         if (savedInstanceState == null) {
-            view.x = 100f
-            view.y = 100f
+            Log.d("ashish", "saveInstance state is null")
+            view.x = appViewModel.posX.toFloat()
+            view.y = appViewModel.posY.toFloat()
         } else {
             Handler().postDelayed({
 
                 val displayWidth = displayMetrix.widthPixels
                 val displayHeight = displayMetrix.heightPixels
+
+                // val prevY = savedInstanceState.getInt(POSY)
+                // val prevX = savedInstanceState.getInt(POSX)
+
+                val prevY = appViewModel.posY
+                val prevX = appViewModel.posX
+
+                Log.d("ashish", "previous value ${prevX} ${prevY}")
+
                 var xPos = 0
                 var yPos = 0
                 if (displayWidth > displayHeight) {
                     val parentPosition = IntArray(2)
                     parentLayout.getLocationOnScreen(parentPosition)
 
-                    val prevY = savedInstanceState.getInt(POSY)
-                    val prevX = savedInstanceState.getInt(POSX)
                     xPos = prevY - parentPosition[0]
 
                     var viewPositionFromScreenTop = displayMetrix.heightPixels - prevX
@@ -64,8 +80,6 @@ class MainActivity : AppCompatActivity() {
                     val parentPosition = IntArray(2)
                     parentLayout.getLocationOnScreen(parentPosition)
 
-                    val prevY = savedInstanceState.getInt(POSY)
-                    val prevX = savedInstanceState.getInt(POSX)
                     yPos = prevX - parentPosition[1]
 
                     var viewPositionFromScreenTop = displayMetrix.widthPixels - prevY
@@ -73,30 +87,41 @@ class MainActivity : AppCompatActivity() {
                         viewPositionFromScreenTop - parentPosition[0] - view.width
                     xPos = viewPositionFromScreenTop
                 }
+                Log.d("ashish", "new updated value ${xPos} ${yPos}")
                 view.x = xPos.toFloat()
                 view.y = yPos.toFloat()
+
+                // Handler().postDelayed({
+                //     updateValues()
+                // }, 1000)
             }, 1000)
         }
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
+    override fun onPause() {
+        super.onPause()
+        updateValues()
+        Log.d("ashish1", "onPause called------------>")
+    }
+
+    private fun updateValues(){
         val arr = IntArray(2)
         view.getLocationOnScreen(arr)
+        appViewModel.updateValue(arr[0], arr[1])
 
-        outState.putInt(POSX, arr[0])
-        outState.putInt(POSY, arr[1])
+        val parentArr = IntArray(2)
+        parentLayout.getLocationOnScreen(parentArr)
 
-        Log.d("ashish", "onSaveInstanceState ${arr[0]} ${arr[1]}")
-
-        super.onSaveInstanceState(outState)
+        Log.d("ashish", "updateValues ${arr[0]} ${arr[1]},  ${view.left} ${view.top},  ${parentArr[0]} ${parentArr[1]}")
     }
 
-    private fun printChildPositionOnScreen() {
-        Handler().postDelayed({
-            val childPosition = IntArray(2)
-            view.getLocationOnScreen(childPosition)
 
-            Log.d("ashish", "printChildPositionOnScreen ${childPosition[0]} ${childPosition[1]}")
-        }, 1000)
-    }
+    /*   private fun printChildPositionOnScreen() {
+           Handler().postDelayed({
+               val childPosition = IntArray(2)
+               view.getLocationOnScreen(childPosition)
+
+               Log.d("ashish", "printChildPositionOnScreen ${childPosition[0]} ${childPosition[1]}")
+           }, 1000)
+       }*/
 }
