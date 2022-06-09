@@ -67,25 +67,40 @@ class MainActivity : AppCompatActivity() {
                 var xPos = 0
                 var yPos = 0
                 if (displayWidth > displayHeight) {
-                    val parentPosition = IntArray(2)
-                    parentLayout.getLocationOnScreen(parentPosition)
+                    var landCord = appViewModel.landCord
+                    if (landCord == null) {
+                        val parentPosition = IntArray(2)
+                        parentLayout.getLocationOnScreen(parentPosition)
 
-                    xPos = prevY - parentPosition[0]
+                        xPos = prevY - parentPosition[0]
 
-                    var viewPositionFromScreenTop = displayMetrix.heightPixels - prevX
-                    viewPositionFromScreenTop =
-                        viewPositionFromScreenTop - parentPosition[1] - view.height
-                    yPos = viewPositionFromScreenTop
+                        var viewPositionFromScreenTop = displayMetrix.heightPixels - prevX
+                        viewPositionFromScreenTop =
+                            viewPositionFromScreenTop - parentPosition[1] - view.height
+                        yPos = viewPositionFromScreenTop
+                        appViewModel.landCord = Coordinate(xPos, yPos)
+                    } else {
+                        xPos = landCord.posX
+                        yPos = landCord.posY
+                    }
                 } else {
-                    val parentPosition = IntArray(2)
-                    parentLayout.getLocationOnScreen(parentPosition)
+                    var porCord = appViewModel.porCord
+                    if (porCord == null) {
 
-                    yPos = prevX - parentPosition[1]
+                        val parentPosition = IntArray(2)
+                        parentLayout.getLocationOnScreen(parentPosition)
 
-                    var viewPositionFromScreenTop = displayMetrix.widthPixels - prevY
-                    viewPositionFromScreenTop =
-                        viewPositionFromScreenTop - parentPosition[0] - view.width
-                    xPos = viewPositionFromScreenTop
+                        yPos = prevX - parentPosition[1]
+
+                        var viewPositionFromScreenTop = displayMetrix.widthPixels - prevY
+                        viewPositionFromScreenTop =
+                            viewPositionFromScreenTop - parentPosition[0] - view.width
+                        xPos = viewPositionFromScreenTop
+                        appViewModel.porCord = Coordinate(xPos, yPos)
+                    } else {
+                        xPos = porCord.posX
+                        yPos = porCord.posY
+                    }
                 }
                 Log.d("ashish", "new updated value ${xPos} ${yPos}")
                 view.x = xPos.toFloat()
@@ -93,7 +108,7 @@ class MainActivity : AppCompatActivity() {
 
                 // Handler().postDelayed({
                 //     updateValues()
-                // }, 1000)
+                // }, 3000)
             }, 1000)
         }
     }
@@ -104,17 +119,21 @@ class MainActivity : AppCompatActivity() {
         Log.d("ashish1", "onPause called------------>")
     }
 
-    private fun updateValues(){
+    private fun updateValues() {
         val arr = IntArray(2)
         view.getLocationOnScreen(arr)
         appViewModel.updateValue(arr[0], arr[1])
 
-        val parentArr = IntArray(2)
-        parentLayout.getLocationOnScreen(parentArr)
+        // val parentArr = IntArray(2)
+        // parentLayout.getLocationOnScreen(parentArr)
+        // Log.d("ashish", "updateValues ${arr[0]} ${arr[1]},  ${view.x} ${view.y},  ${parentArr[0]} ${parentArr[1]}")
 
-        Log.d("ashish", "updateValues ${arr[0]} ${arr[1]},  ${view.left} ${view.top},  ${parentArr[0]} ${parentArr[1]}")
+        Log.d("ashish", "updateValues ${arr[0]} ${arr[1]},  ${view.x} ${view.y}, ${isPortrait()}")
+        // val viewWindowPosition = IntArray(2)
+        // view.getLocationInWindow(viewWindowPosition)
+        //
+        // Log.d("ashish", "windowPosition ${viewWindowPosition[0]} ${viewWindowPosition[1]}")
     }
-
 
     /*   private fun printChildPositionOnScreen() {
            Handler().postDelayed({
