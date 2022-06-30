@@ -1,7 +1,10 @@
 package com.example.viewtest
 
+import AppViewModel
+import Coordinate
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.View
@@ -27,15 +30,10 @@ class MainActivity : AppCompatActivity() {
 
     lateinit var appViewModel: AppViewModel
 
-    val POSX = "posx"
-    val POSY = "posy"
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         appViewModel = ViewModelProvider(this).get(AppViewModel::class.java)
-
-        Log.d("ashish", "isPortrait    ${isPortrait()} ------------------------------>")
         view.x = 0F
         view.y = 0F
         updatePosition(savedInstanceState)
@@ -46,101 +44,150 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updatePosition(savedInstanceState: Bundle?) {
+        val isPortrait = isPortrait()
+        appViewModel.getCordCal(isPortrait)
         if (savedInstanceState == null) {
             Log.d("ashish", "saveInstance state is null")
             view.x = appViewModel.posX.toFloat()
             view.y = appViewModel.posY.toFloat()
+
+            Handler(Looper.getMainLooper())
+                .postDelayed({
+                    val pivotPointCoordinates = appViewModel.getCordCal(isPortrait).getPivotPoint(
+                        parentDimensions = Dimensions(parentLayout.width, parentLayout.height),
+                        viewDimensions = Dimensions(view.width, view.height),
+                        viewCoordinates = Point(view.x, view.y),
+                        isPortrait()
+                    )
+                    appViewModel.viewCoordinates = Coordinate(
+                        pivotPointCoordinates.x,
+                        pivotPointCoordinates.y,
+                        isPortrait()
+                    )
+                }, 1000)
         } else {
-            Handler().postDelayed({
-
-                val displayWidth = displayMetrix.widthPixels
-                val displayHeight = displayMetrix.heightPixels
-
-                // val prevY = savedInstanceState.getInt(POSY)
-                // val prevX = savedInstanceState.getInt(POSX)
-
-                val prevY = appViewModel.posY
-                val prevX = appViewModel.posX
-
-                Log.d("ashish", "previous value ${prevX} ${prevY}")
-
-                var xPos = 0
-                var yPos = 0
-                if (displayWidth > displayHeight) {
-                    var landCord = appViewModel.landCord
-                    if (landCord == null) {
-                        val parentPosition = IntArray(2)
-                        parentLayout.getLocationOnScreen(parentPosition)
-
-                        xPos = prevY - parentPosition[0]
-
-                        var viewPositionFromScreenTop = displayMetrix.heightPixels - prevX
-                        viewPositionFromScreenTop =
-                            viewPositionFromScreenTop - parentPosition[1] - view.height
-                        yPos = viewPositionFromScreenTop
-                        appViewModel.landCord = Coordinate(xPos, yPos)
+            Handler(Looper.getMainLooper()).postDelayed({
+                val parentHeight = parentLayout.height
+                val parentWidth = parentLayout.width
+                appViewModel.viewCoordinates?.let { prevCord ->
+                    val calX = prevCord.posX
+                    val calY = prevCord.posY
+                    val currentInPortrait = isPortrait()
+                    if (prevCord.isPortrait == currentInPortrait) return@let
+                    val parentDimensions = Dimensions(parentWidth, parentHeight)
+                    val viewDimensions = Dimensions(view.width, view.height)
+                    val displayCoordinates =
+                        appViewModel.getCordCal(isPortrait).getDisplayCoordinates(
+                            parentDimensions,
+                            viewDimensions,
+                            Point(calX, calY),
+                            currentInPortrait
+                        )
+                    view.x = displayCoordinates.x
+                    view.y = displayCoordinates.y
+                    if (!currentInPortrait) {
+                        // view.pivotX = 0f
+                        // view.pivotY = 0f
+                        // view.rotation = 270f
+                        // val newY = view.y + view.height
+                        // view.y = newY
                     } else {
-                        xPos = landCord.posX
-                        yPos = landCord.posY
+                        // view.pivotX = 0f
+                        // view.pivotY = 0f
+                        //view.rotation = view.rotation+90
                     }
-                } else {
-                    var porCord = appViewModel.porCord
-                    if (porCord == null) {
-
-                        val parentPosition = IntArray(2)
-                        parentLayout.getLocationOnScreen(parentPosition)
-
-                        yPos = prevX - parentPosition[1]
-
-                        var viewPositionFromScreenTop = displayMetrix.widthPixels - prevY
-                        viewPositionFromScreenTop =
-                            viewPositionFromScreenTop - parentPosition[0] - view.width
-                        xPos = viewPositionFromScreenTop
-                        appViewModel.porCord = Coordinate(xPos, yPos)
-                    } else {
-                        xPos = porCord.posX
-                        yPos = porCord.posY
-                    }
+                    val pivotPointCoordinates = appViewModel.getCordCal(isPortrait).getPivotPoint(
+                        parentDimensions = parentDimensions,
+                        viewDimensions = viewDimensions,
+                        viewCoordinates = displayCoordinates,
+                        currentInPortrait
+                    )
+                    appViewModel.viewCoordinates = Coordinate(
+                        pivotPointCoordinates.x,
+                        pivotPointCoordinates.y,
+                        isPortrait()
+                    )
                 }
-                Log.d("ashish", "new updated value ${xPos} ${yPos}")
-                view.x = xPos.toFloat()
-                view.y = yPos.toFloat()
-
-                // Handler().postDelayed({
-                //     updateValues()
-                // }, 3000)
             }, 1000)
         }
     }
 
-    override fun onPause() {
-        super.onPause()
-        updateValues()
-        Log.d("ashish1", "onPause called------------>")
+    private fun updatePosition2(savedInstanceState: Bundle?) {
+        val isPortrait = isPortrait()
+        if (savedInstanceState == null) {
+            // Log.d("ashish", "saveInstance state is null")
+            view.x = appViewModel.posX.toFloat()
+            view.y = appViewModel.posY.toFloat()
+            Handler(Looper.getMainLooper())
+                .postDelayed({
+                    val pivotPointCoordinates = appViewModel.getCordCal(isPortrait).getPivotPoint(
+                        Dimensions(parentLayout.width, parentLayout.height),
+                        Dimensions(view.width, view.height),
+                        Point(view.x, view.y),
+                        isPortrait()
+                    )
+                    appViewModel.viewCoordinates = Coordinate(
+                        pivotPointCoordinates.x,
+                        pivotPointCoordinates.y,
+                        isPortrait()
+                    )
+                }, 1000)
+        } else {
+            Handler(Looper.getMainLooper()).postDelayed({
+                val parentHeight = parentLayout.height
+                val parentWidth = parentLayout.width
+                appViewModel.viewCoordinates?.let { prevCord ->
+                    val calX = prevCord.posX
+                    val calY = prevCord.posY
+                    val currentInPortrait = isPortrait()
+                    if (prevCord.isPortrait == currentInPortrait) return@let
+                    val parentDimensions = Dimensions(parentWidth, parentHeight)
+                    val viewDimensions = Dimensions(view.width, view.height)
+                    val displayCoordinates =
+                        appViewModel.getCordCal(isPortrait).getDisplayCoordinates(
+                            parentDimensions,
+                            viewDimensions,
+                            Point(calX, calY),
+                            currentInPortrait
+                        )
+                    view.x = displayCoordinates.x
+                    view.y = displayCoordinates.y
+                    // Handler(Looper.getMainLooper()).postDelayed({
+                    //     if (!currentInPortrait) {
+                    //         Log.d("ashish", "calX ${calX}   -  calY ${calY}")
+                    //         Log.d("ashish", "width ${view.width}  height ${view.height}")
+                    //         view.pivotX = 0f
+                    //         view.pivotY = 0f
+                    //         view.rotation = 270f
+                    //         val newY = view.y + view.height
+                    //         view.y = newY
+                    //
+                    //         // displayCoordinates = displayCoordinates.copy(y= newY)
+                    //
+                    //         // view.pivotX = 0f
+                    //         // view.pivotY = view.height.toFloat()
+                    //         // view.rotation = 90f//view.rotation - 90
+                    //         // view.y -= view.width
+                    //
+                    //
+                    //         // view.x -= view.width
+                    //     } else {
+                    //         //view.rotation = view.rotation+90
+                    //     }
+                    // }, 0)
+                    val pivotPointCoordinates = appViewModel.getCordCal(isPortrait).getPivotPoint(
+                        parentDimensions,
+                        viewDimensions,
+                        displayCoordinates,
+                        currentInPortrait
+                    )
+                    appViewModel.viewCoordinates = Coordinate(
+                        pivotPointCoordinates.x,
+                        pivotPointCoordinates.y,
+                        isPortrait()
+                    )
+                }
+            }, 100)
+        }
     }
-
-    private fun updateValues() {
-        val arr = IntArray(2)
-        view.getLocationOnScreen(arr)
-        appViewModel.updateValue(arr[0], arr[1])
-
-        // val parentArr = IntArray(2)
-        // parentLayout.getLocationOnScreen(parentArr)
-        // Log.d("ashish", "updateValues ${arr[0]} ${arr[1]},  ${view.x} ${view.y},  ${parentArr[0]} ${parentArr[1]}")
-
-        Log.d("ashish", "updateValues ${arr[0]} ${arr[1]},  ${view.x} ${view.y}, ${isPortrait()}")
-        // val viewWindowPosition = IntArray(2)
-        // view.getLocationInWindow(viewWindowPosition)
-        //
-        // Log.d("ashish", "windowPosition ${viewWindowPosition[0]} ${viewWindowPosition[1]}")
-    }
-
-    /*   private fun printChildPositionOnScreen() {
-           Handler().postDelayed({
-               val childPosition = IntArray(2)
-               view.getLocationOnScreen(childPosition)
-
-               Log.d("ashish", "printChildPositionOnScreen ${childPosition[0]} ${childPosition[1]}")
-           }, 1000)
-       }*/
 }

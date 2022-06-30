@@ -1,9 +1,9 @@
-package com.example.viewtest
-
 import androidx.lifecycle.ViewModel
+import com.example.viewtest.CordCal
+import com.example.viewtest.CordCalForLandscape
+import com.example.viewtest.CordCalForPortrait
 
 class AppViewModel : ViewModel() {
-
 
     var posX: Int = 100
     var posY: Int = 100
@@ -12,25 +12,20 @@ class AppViewModel : ViewModel() {
         posY = y
     }
 
-    var porCord: Coordinate? = null
-    var landCord: Coordinate? = null
+    var isInitiallyPortrait: Boolean? = null
+    fun getCordCal(portrait: Boolean): CordCal {
+        if (isInitiallyPortrait == null) {
+            isInitiallyPortrait = portrait
+        }
 
-    /* fun updateValue(x: Int, y: Int, isPort: Boolean) {
-         if (isPort) {
-             if (porCord == null) {
-                 porCord = Coordinate(x, y)
-             }
-         } else {
-             if (landCord == null) {
-                 landCord = Coordinate(x, y)
-             }
-         }
-     }
+        if (isInitiallyPortrait!!) {
+            return CordCalForPortrait
+        } else {
+            return CordCalForLandscape
+        }
+    }
 
-     fun getCoordinate(isPort: Boolean): Coordinate? {
-         return if (isPort) porCord
-         else landCord
-     }*/
+    var viewCoordinates: Coordinate? = null
 }
 
-data class Coordinate(val posX: Int, val posY: Int)
+data class Coordinate(val posX: Float, val posY: Float, val isPortrait: Boolean)
