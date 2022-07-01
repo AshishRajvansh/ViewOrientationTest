@@ -1,6 +1,5 @@
 package com.example.viewtest
 
-import android.util.Log
 import android.view.View
 
 interface CordCal {

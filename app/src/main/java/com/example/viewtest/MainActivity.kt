@@ -3,8 +3,6 @@ package com.example.viewtest
 import AppViewModel
 import Coordinate
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.DisplayMetrics
 import android.view.View
 import android.widget.LinearLayout
