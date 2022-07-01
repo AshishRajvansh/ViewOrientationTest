@@ -17,7 +17,7 @@
         <View
             android:id="@+id/view"
             android:layout_width="100dp"
-            android:layout_height="100dp"
+            android:layout_height="200dp"
             android:background="@drawable/bg_view" />
         <!--        <Button-->
         <!--            android:layout_width="wrap_content"-->
