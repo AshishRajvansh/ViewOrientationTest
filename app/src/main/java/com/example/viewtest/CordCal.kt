@@ -1,5 +1,6 @@
 package com.example.viewtest
 
+import android.util.Log
 import android.view.View
 
 interface CordCal {
@@ -82,11 +83,11 @@ object CordCalForLandscape : CordCal {
         isPortrait: Boolean
     ): Point {
         val point = if (isPortrait) {
-            val x = parentDimensions.width - pivotPoint.y - viewDimensions.width
-            val y = pivotPoint.x
+            val x = parentDimensions.width - pivotPoint.x - viewDimensions.width
+            val y = pivotPoint.y
             Point(x, y)
         } else {
-            pivotPoint
+            Point(pivotPoint.y, pivotPoint.x)
         }
         return point
     }
@@ -102,7 +103,7 @@ object CordCalForLandscape : CordCal {
             val y = viewCoordinates.y
             Point(x, y)
         } else {
-            viewCoordinates
+            Point(viewCoordinates.y, viewCoordinates.x)
         }
         return point
     }

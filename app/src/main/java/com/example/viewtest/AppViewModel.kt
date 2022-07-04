@@ -5,7 +5,7 @@ import com.example.viewtest.CordCalForPortrait
 
 class AppViewModel : ViewModel() {
 
-    var initialPosX: Int = 100
+    var initialPosX: Int = 500
     var initialPosY: Int = 100
 
     private var isInitiallyPortrait: Boolean? = null
